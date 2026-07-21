@@ -1,0 +1,239 @@
+/* Paleta Oficial UNLP & Sobria Institucional */
+:root {
+    --unlp-navy: #151D2A;
+    --unlp-navy-dark: #0B1017;
+    --unlp-blue: #0066FF;
+    --unlp-soft: #F0F6FF;
+    --unlp-bg: #F4F6F9;
+    --unlp-border: #CBD5E1;
+
+    /* Colores de Intensidad del Macro */
+    --intensity-amarillo: #FEF08A;
+    --intensity-rojo: #FECACA;
+    --intensity-naranja: #FFEDD5;
+    --intensity-verde: #BBF7D0;
+    --intensity-miercoles: #BAE6FD;
+}
+
+body {
+    background-color: var(--unlp-bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1E293B;
+    line-height: 1.4;
+}
+
+/* Tipografía y Auxiliares */
+.extra-small {
+    font-size: 0.75rem;
+}
+.fs-7 {
+    font-size: 0.7rem;
+}
+.italic {
+    font-style: italic;
+}
+.tracking-wide {
+    letter-spacing: 0.05em;
+}
+
+/* Colores UNLP */
+.bg-unlp-navy {
+    background-color: var(--unlp-navy) !important;
+}
+.bg-unlp-blue {
+    background-color: var(--unlp-blue) !important;
+}
+.bg-unlp-soft {
+    background-color: var(--unlp-soft) !important;
+}
+.text-unlp-blue {
+    color: var(--unlp-blue) !important;
+}
+.text-navy-dark {
+    color: var(--unlp-navy-dark) !important;
+}
+
+/* Botones UNLP */
+.btn-unlp-navy {
+    background-color: var(--unlp-navy);
+    color: #ffffff;
+    border: none;
+}
+.btn-unlp-navy:hover {
+    background-color: var(--unlp-navy-dark);
+    color: #ffffff;
+}
+
+.btn-unlp-blue {
+    background-color: var(--unlp-blue);
+    color: #ffffff;
+    border: none;
+}
+.btn-unlp-blue:hover {
+    background-color: #0052cc;
+    color: #ffffff;
+}
+
+.btn-outline-unlp-blue {
+    border-color: var(--unlp-blue);
+    color: var(--unlp-blue);
+}
+.btn-outline-unlp-blue:hover {
+    background-color: var(--unlp-blue);
+    color: #ffffff;
+}
+
+.btn-nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Logo UNLP Pill Header */
+.unlp-pill-logo {
+    display: inline-flex;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    white-space: nowrap;
+}
+.unlp-pill-logo.lg {
+    padding: 8px 20px;
+    font-size: 1.1rem;
+}
+
+/* Header Ajustes Responsive */
+.header-right-actions {
+    flex-wrap: nowrap;
+}
+
+/* Hero Header UNLP */
+.bg-unlp-hero {
+    background-color: #EBF3FA;
+}
+
+/* Avatar Atleta */
+.avatar-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ESTRUCTURA PLANILLA Y DÍAS RESPONSIVE */
+.spreadsheet-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.day-card {
+    display: none;
+    width: 100%;
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--unlp-border);
+}
+
+.day-card.active {
+    display: block;
+}
+
+.day-header {
+    padding: 10px 14px;
+    font-weight: 700;
+    text-align: center;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.day-body {
+    font-size: 0.82rem;
+    line-height: 1.35;
+}
+
+/* Bloques dentro de cada día */
+.plan-block {
+    margin-bottom: 10px;
+}
+.plan-block-title {
+    font-weight: 700;
+    color: #0F172A;
+    display: block;
+    margin-bottom: 1px;
+}
+.plan-block p {
+    margin-bottom: 0;
+    color: #334155;
+}
+
+/* Intensidades de Cabecera */
+.bg-intensity-lunes { background-color: var(--intensity-amarillo) !important; color: #000; }
+.bg-intensity-martes { background-color: var(--intensity-rojo) !important; color: #000; }
+.bg-intensity-miercoles { background-color: var(--intensity-miercoles) !important; color: #000; }
+.bg-intensity-jueves { background-color: var(--intensity-naranja) !important; color: #000; }
+.bg-intensity-viernes { background-color: var(--intensity-verde) !important; color: #000; }
+
+/* VISTA ESCRITORIO (Muestra todos los días como columnas) */
+@media (min-width: 769px) {
+    .spreadsheet-container {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    .day-card {
+        display: block !important;
+        border-bottom: none;
+        border-right: 1px solid var(--unlp-border);
+    }
+
+    .day-card:last-child {
+        border-right: none;
+    }
+}
+
+/* Tarjetas de Atletas */
+.athlete-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.athlete-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+}
+
+/* RPE Selector */
+/* Botones RPE Estado Normal */
+.btn-rpe {
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 10px 6px;
+    color: #334155;
+    background-color: #F1F5F9;
+    border: 1px solid #CBD5E1;
+    transition: all 0.15s ease;
+}
+
+.btn-rpe-verde { border-color: #22C55E; color: #15803D; }
+.btn-rpe-amarillo { border-color: #EAB308; color: #A16207; }
+.btn-rpe-naranja { border-color: #F97316; color: #C2410C; }
+.btn-rpe-rojo { border-color: #EF4444; color: #B91C1C; }
+.btn-rpe-violeta { border-color: #A855F7; color: #6B21A8; }
+
+/* Estado Seleccionado (:checked) */
+.btn-check:checked + .btn-rpe-verde { background-color: #22C55E !important; color: #ffffff !important; }
+.btn-check:checked + .btn-rpe-amarillo { background-color: #EAB308 !important; color: #000000 !important; }
+.btn-check:checked + .btn-rpe-naranja { background-color: #F97316 !important; color: #ffffff !important; }
+.btn-check:checked + .btn-rpe-rojo { background-color: #EF4444 !important; color: #ffffff !important; }
+.btn-check:checked + .btn-rpe-violeta { background-color: #A855F7 !important; color: #ffffff !important; }
+
+.btn-check:checked + .btn-rpe {
+    font-weight: 700;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+.shadow-xs {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
