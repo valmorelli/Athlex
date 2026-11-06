@@ -1,0 +1,633 @@
+// Proyecto atletismo - traduccion preliminar del DER v0.8 a Prisma ORM 7
+// Identificadores de negocio se mantienen en el idioma de los documentos.
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum EstadoCuenta {
+  ACTIVA
+  INACTIVA
+  BLOQUEADA
+}
+enum TipoParticipante {
+  INSTITUCIONAL
+  EXTERNO
+}
+enum TipoEntrenador {
+  PRINCIPAL
+  SECUNDARIO
+}
+enum EstadoRegistro {
+  COMPLETADO
+  NO_REALIZADO
+  SIN_REGISTRAR
+}
+enum Sensacion {
+  VERDE
+  AMARILLO
+  NARANJA
+  ROJO
+  VIOLETA
+}
+enum EstadoTorneo {
+  BORRADOR
+  ABIERTO
+  CERRADO
+  POSTERGADO
+  CANCELADO
+  FINALIZADO
+}
+enum EstadoInscripcion {
+  PENDIENTE
+  CONFIRMADA
+  RECHAZADA
+  CANCELADA
+}
+enum EstadoDetallePrueba {
+  ACTIVA
+  CANCELADA
+}
+enum MetodoPago {
+  MERCADO_PAGO
+  TRANSFERENCIA
+  CREDITO
+}
+enum EstadoPago {
+  PENDIENTE_VERIFICACION
+  ACREDITADO
+  RECHAZADO
+  REINTEGRADO
+  APLICADO_CREDITO
+}
+enum TipoMarca {
+  PB
+  SB
+}
+enum ModalidadSerie {
+  CARRILES_6
+  GRUPO_15
+}
+enum EstadoTarea {
+  PENDIENTE
+  EJECUTANDO
+  COMPLETADA
+  CANCELADA
+  ERROR
+}
+
+model Club {
+  id        String @id @default(uuid()) @db.Uuid
+  nombre    String
+  estado    String @default("ACTIVO")
+  grupos    GrupoEntrenamiento[]
+  membresias MembresiaClub[]
+  asignaciones AsignacionEntrenador[]
+  permisos  PermisoOrganizador[]
+  cuentaCobro CuentaCobroClub?
+  fuentes   FuentePlanilla[]
+  registros RegistroDiario[]
+  torneos   Torneo[]
+  creditos  Credito[]
+  torneosFederativos TorneoFederativo[]
+  creadoEn  DateTime @default(now())
+}
+
+model Usuario {
+  id              String @id @default(uuid()) @db.Uuid
+  email           String @unique
+  hashClave       String
+  nombre          String
+  apellido        String
+  fechaNacimiento DateTime @db.Date
+  sexoCompetencia String?
+  estadoCuenta    EstadoCuenta @default(ACTIVA)
+  tipoParticipante TipoParticipante
+  perfilAtleta    PerfilAtleta?
+  perfilEntrenador PerfilEntrenador?
+  membresiasClub  MembresiaClub[]
+  membresiasGrupo MembresiaGrupo[]
+  comoAtleta      AsignacionEntrenador[] @relation("AsignacionAtleta")
+  comoEntrenador  AsignacionEntrenador[] @relation("AsignacionEntrenador")
+  permisos        PermisoOrganizador[] @relation("OrganizadorBeneficiario")
+  permisosOtorgados PermisoOrganizador[] @relation("OrganizadorOtorgante")
+  fuentes         FuentePlanilla[]
+  planes          PlanSemanal[]
+  sincronizaciones VersionPlan[]
+  registros       RegistroDiario[]
+  testsFuerza     TestFuerza[]
+  inscripciones   Inscripcion[]
+  marcas          MarcaDeportivaActual[]
+  torneosCreados  Torneo[]
+  creditos        Credito[] @relation("CreditoTitular")
+  creditosRegistrados Credito[] @relation("CreditoOperador")
+  movimientosCredito MovimientoCredito[]
+  reintegrosRegistrados ReintegroRegistrado[]
+  comprobantesRevisados ComprobantePago[]
+  documentos      DocumentoMedico[]
+  notificaciones  Notificacion[]
+  suscripciones   SuscripcionPush[]
+  eventosAuditoria EventoAuditoria[]
+  interesesFederativos InteresFederativo[]
+  creadoEn        DateTime @default(now())
+  actualizadoEn   DateTime @updatedAt
+}
+
+model GrupoEntrenamiento {
+  id String @id @default(uuid()) @db.Uuid
+  clubId String @db.Uuid
+  nombre String
+  activo Boolean @default(true)
+  club Club @relation(fields: [clubId], references: [id])
+  membresias MembresiaGrupo[]
+  @@unique([clubId, nombre])
+}
+
+model MembresiaClub {
+  id String @id @default(uuid()) @db.Uuid
+  clubId String @db.Uuid
+  usuarioId String @db.Uuid
+  desde DateTime @default(now())
+  hasta DateTime?
+  estado String @default("ACTIVA")
+  club Club @relation(fields: [clubId], references: [id])
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+  @@index([clubId, usuarioId])
+}
+
+model MembresiaGrupo {
+  id String @id @default(uuid()) @db.Uuid
+  grupoId String @db.Uuid
+  usuarioId String @db.Uuid
+  desde DateTime @default(now())
+  hasta DateTime?
+  grupo GrupoEntrenamiento @relation(fields: [grupoId], references: [id])
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+  @@index([usuarioId, hasta])
+}
+
+model PerfilAtleta {
+  usuarioId String @id @db.Uuid
+  especialidadPrincipal String?
+  peso Decimal? @db.Decimal(7,2)
+  fichaDeportiva String?
+  historialMedico String?
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+model PerfilEntrenador {
+  usuarioId String @id @db.Uuid
+  dni String? @unique
+  licencia String? @unique
+  estadoValidacion String @default("PENDIENTE")
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+model AsignacionEntrenador {
+  id String @id @default(uuid()) @db.Uuid
+  clubId String @db.Uuid
+  atletaId String @db.Uuid
+  entrenadorId String @db.Uuid
+  tipo TipoEntrenador
+  desde DateTime @default(now())
+  hasta DateTime?
+  club Club @relation(fields: [clubId], references: [id])
+  atleta Usuario @relation("AsignacionAtleta", fields: [atletaId], references: [id])
+  entrenador Usuario @relation("AsignacionEntrenador", fields: [entrenadorId], references: [id])
+  @@index([clubId, atletaId, tipo, hasta])
+}
+
+model PermisoOrganizador {
+  id String @id @default(uuid()) @db.Uuid
+  clubId String @db.Uuid
+  usuarioId String @db.Uuid
+  otorgadoPorId String @db.Uuid
+  activo Boolean @default(true)
+  otorgadoEn DateTime @default(now())
+  revocadoEn DateTime?
+  club Club @relation(fields: [clubId], references: [id])
+  usuario Usuario @relation("OrganizadorBeneficiario", fields: [usuarioId], references: [id])
+  otorgadoPor Usuario @relation("OrganizadorOtorgante", fields: [otorgadoPorId], references: [id])
+  @@index([clubId, usuarioId, activo])
+}
+
+model CuentaCobroClub {
+  id String @id @default(uuid()) @db.Uuid
+  clubId String @unique @db.Uuid
+  alias String?
+  cbuCvu String?
+  referenciaMP String?
+  club Club @relation(fields: [clubId], references: [id])
+}
+
+model FuentePlanilla {
+  id String @id @default(uuid()) @db.Uuid
+  clubId String @db.Uuid
+  entrenadorPrincipalId String @db.Uuid
+  spreadsheetId String
+  pestana String
+  url String
+  activa Boolean @default(true)
+  ultimaSincronizacion DateTime?
+  club Club @relation(fields: [clubId], references: [id])
+  entrenador Usuario @relation(fields: [entrenadorPrincipalId], references: [id])
+  planes PlanSemanal[]
+  @@unique([clubId, entrenadorPrincipalId, spreadsheetId, pestana])
+}
+
+model PlanSemanal {
+  id String @id @default(uuid()) @db.Uuid
+  fuentePlanillaId String @db.Uuid
+  entrenadorPrincipalId String @db.Uuid
+  lunesInicio DateTime @db.Date
+  numeroVersionVigente Int?
+  estado String @default("PUBLICADO")
+  fuente FuentePlanilla @relation(fields: [fuentePlanillaId], references: [id])
+  entrenador Usuario @relation(fields: [entrenadorPrincipalId], references: [id])
+  versiones VersionPlan[]
+  @@unique([entrenadorPrincipalId, lunesInicio])
+}
+
+model VersionPlan {
+  id String @id @default(uuid()) @db.Uuid
+  planSemanalId String @db.Uuid
+  numeroVersion Int
+  sincronizadoEn DateTime @default(now())
+  sincronizadoPorId String @db.Uuid
+  estadoLectura String
+  plan PlanSemanal @relation(fields: [planSemanalId], references: [id])
+  sincronizadoPor Usuario @relation(fields: [sincronizadoPorId], references: [id])
+  dias DiaPlanificado[]
+  @@unique([planSemanalId, numeroVersion])
+}
+
+model DiaPlanificado {
+  id String @id @default(uuid()) @db.Uuid
+  versionPlanId String @db.Uuid
+  fecha DateTime @db.Date
+  contenidoGeneral String @db.Text
+  notaEntrenador String? @db.Text
+  colorOrientativo String?
+  version VersionPlan @relation(fields: [versionPlanId], references: [id])
+  @@unique([versionPlanId, fecha])
+}
+
+model MotivoFalta {
+  id String @id @default(uuid()) @db.Uuid
+  nombre String @unique
+  activo Boolean @default(true)
+  registros RegistroDiario[]
+}
+
+model RegistroDiario {
+  id String @id @default(uuid()) @db.Uuid
+  clubId String @db.Uuid
+  atletaId String @db.Uuid
+  fecha DateTime @db.Date
+  estado EstadoRegistro
+  sensacion Sensacion?
+  calzado String?
+  observaciones String? @db.Text
+  motivoFaltaId String? @db.Uuid
+  motivoLibre String?
+  guardadoEn DateTime @default(now())
+  editadoEn DateTime @updatedAt
+  club Club @relation(fields: [clubId], references: [id])
+  atleta Usuario @relation(fields: [atletaId], references: [id])
+  motivoFalta MotivoFalta? @relation(fields: [motivoFaltaId], references: [id])
+  @@unique([clubId, atletaId, fecha])
+}
+
+model Ejercicio {
+  id String @id @default(uuid()) @db.Uuid
+  nombre String
+  categoria String
+  descripcion String?
+  tests TestFuerza[]
+}
+
+model TestFuerza {
+  id String @id @default(uuid()) @db.Uuid
+  atletaId String @db.Uuid
+  ejercicioId String @db.Uuid
+  valor1RM Decimal @db.Decimal(9,2)
+  fechaTest DateTime @db.Date
+  atleta Usuario @relation(fields: [atletaId], references: [id])
+  ejercicio Ejercicio @relation(fields: [ejercicioId], references: [id])
+  @@index([atletaId, ejercicioId, fechaTest])
+}
+
+model Torneo {
+  id String @id @default(uuid()) @db.Uuid
+  clubId String @db.Uuid
+  organizadorId String @db.Uuid
+  nombre String
+  inicio DateTime
+  fin DateTime
+  cierreInscripciones DateTime
+  precioPorPrueba Decimal @db.Decimal(12,2)
+  estado EstadoTorneo @default(BORRADOR)
+  club Club @relation(fields: [clubId], references: [id])
+  organizador Usuario @relation(fields: [organizadorId], references: [id])
+  pruebas PruebaTorneo[]
+  inscripciones Inscripcion[]
+  exportaciones ExportacionInscriptos[]
+  tareas TareaProgramada[]
+  cronogramas CronogramaTorneo[]
+  @@index([clubId, inicio])
+}
+
+model Disciplina {
+  id String @id @default(uuid()) @db.Uuid
+  nombre String @unique
+  tipoMedicion String
+  unidadPredeterminada String
+  modalidadSalida String
+  pruebas PruebaTorneo[]
+  marcas MarcaDeportivaActual[]
+}
+
+model Categoria {
+  id String @id @default(uuid()) @db.Uuid
+  nombre String @unique
+  edadMin Int
+  edadMax Int?
+  habilitaciones CategoriaHabilitadaPrueba[]
+  inscripciones Inscripcion[]
+  series SeriePista[]
+}
+
+model PruebaTorneo {
+  id String @id @default(uuid()) @db.Uuid
+  torneoId String @db.Uuid
+  disciplinaId String @db.Uuid
+  estado EstadoDetallePrueba @default(ACTIVA)
+  torneo Torneo @relation(fields: [torneoId], references: [id])
+  disciplina Disciplina @relation(fields: [disciplinaId], references: [id])
+  categorias CategoriaHabilitadaPrueba[]
+  detalles InscripcionPrueba[]
+  series SeriePista[]
+  @@unique([torneoId, disciplinaId])
+}
+
+model CategoriaHabilitadaPrueba {
+  pruebaTorneoId String @db.Uuid
+  categoriaId String @db.Uuid
+  prueba PruebaTorneo @relation(fields: [pruebaTorneoId], references: [id])
+  categoria Categoria @relation(fields: [categoriaId], references: [id])
+  @@id([pruebaTorneoId, categoriaId])
+}
+
+model Inscripcion {
+  id String @id @default(uuid()) @db.Uuid
+  torneoId String @db.Uuid
+  usuarioId String @db.Uuid
+  categoriaId String @db.Uuid
+  sexoCompetencia String
+  estado EstadoInscripcion @default(PENDIENTE)
+  creadaEn DateTime @default(now())
+  torneo Torneo @relation(fields: [torneoId], references: [id])
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+  categoria Categoria @relation(fields: [categoriaId], references: [id])
+  pruebas InscripcionPrueba[]
+  pagos Pago[]
+  movimientosCredito MovimientoCredito[]
+  @@unique([torneoId, usuarioId])
+}
+
+model InscripcionPrueba {
+  id String @id @default(uuid()) @db.Uuid
+  inscripcionId String @db.Uuid
+  pruebaTorneoId String @db.Uuid
+  precioPactado Decimal @db.Decimal(12,2)
+  marcaReferencia Decimal? @db.Decimal(12,3)
+  unidadMarcaReferencia String?
+  estado EstadoDetallePrueba @default(ACTIVA)
+  inscripcion Inscripcion @relation(fields: [inscripcionId], references: [id])
+  prueba PruebaTorneo @relation(fields: [pruebaTorneoId], references: [id])
+  asignaciones AsignacionSerie[]
+  @@unique([inscripcionId, pruebaTorneoId])
+}
+
+model ExportacionInscriptos {
+  id String @id @default(uuid()) @db.Uuid
+  torneoId String @db.Uuid
+  archivoId String? @db.Uuid
+  generadaEn DateTime @default(now())
+  estado String @default("GENERADA")
+  torneo Torneo @relation(fields: [torneoId], references: [id])
+  archivo ArchivoAdjunto? @relation("ArchivoExcel", fields: [archivoId], references: [id])
+  series SeriePista[]
+  @@index([torneoId, generadaEn])
+}
+
+model SeriePista {
+  id String @id @default(uuid()) @db.Uuid
+  pruebaTorneoId String @db.Uuid
+  categoriaId String @db.Uuid
+  sexoCompetencia String
+  numeroSerie Int
+  capacidadMaxima Int
+  modalidadSerie ModalidadSerie
+  generadaEn DateTime @default(now())
+  exportacionId String @db.Uuid
+  prueba PruebaTorneo @relation(fields: [pruebaTorneoId], references: [id])
+  categoria Categoria @relation(fields: [categoriaId], references: [id])
+  exportacion ExportacionInscriptos @relation(fields: [exportacionId], references: [id])
+  asignaciones AsignacionSerie[]
+  @@unique([pruebaTorneoId, categoriaId, sexoCompetencia, numeroSerie, exportacionId])
+}
+
+model AsignacionSerie {
+  id String @id @default(uuid()) @db.Uuid
+  serieId String @db.Uuid
+  inscripcionPruebaId String @db.Uuid
+  carril Int?
+  marcaOrdenamiento Decimal? @db.Decimal(12,3)
+  origenMarcaOrdenamiento String
+  serie SeriePista @relation(fields: [serieId], references: [id])
+  inscripcionPrueba InscripcionPrueba @relation(fields: [inscripcionPruebaId], references: [id])
+  @@unique([serieId, inscripcionPruebaId])
+  @@index([inscripcionPruebaId])
+}
+
+model MarcaDeportivaActual {
+  id String @id @default(uuid()) @db.Uuid
+  atletaId String @db.Uuid
+  disciplinaId String @db.Uuid
+  tipoMarca TipoMarca
+  temporadaAnio Int?
+  valor Decimal @db.Decimal(12,3)
+  unidad String
+  viento Decimal? @db.Decimal(5,2)
+  fechaMarca DateTime? @db.Date
+  atleta Usuario @relation(fields: [atletaId], references: [id])
+  disciplina Disciplina @relation(fields: [disciplinaId], references: [id])
+  @@index([atletaId, disciplinaId, tipoMarca])
+}
+
+model ArchivoAdjunto {
+  id String @id @default(uuid()) @db.Uuid
+  claveAlmacenamiento String @unique
+  mimeType String
+  tamanoBytes Int
+  documentosMedicos DocumentoMedico[]
+  comprobantes ComprobantePago[]
+  exportaciones ExportacionInscriptos[] @relation("ArchivoExcel")
+  cronogramas CronogramaTorneo[]
+}
+
+model Pago {
+  id String @id @default(uuid()) @db.Uuid
+  inscripcionId String @db.Uuid
+  metodo MetodoPago
+  estado EstadoPago @default(PENDIENTE_VERIFICACION)
+  monto Decimal @db.Decimal(12,2)
+  referenciaExterna String? @unique
+  acreditadoEn DateTime?
+  inscripcion Inscripcion @relation(fields: [inscripcionId], references: [id])
+  comprobantes ComprobantePago[]
+  creditosOrigen Credito[]
+  reintegros ReintegroRegistrado[]
+}
+
+model ComprobantePago {
+  id String @id @default(uuid()) @db.Uuid
+  pagoId String @db.Uuid
+  archivoId String @db.Uuid
+  revisadoPorId String? @db.Uuid
+  revisadoEn DateTime?
+  pago Pago @relation(fields: [pagoId], references: [id])
+  archivo ArchivoAdjunto @relation(fields: [archivoId], references: [id])
+  revisadoPor Usuario? @relation(fields: [revisadoPorId], references: [id])
+}
+
+model Credito {
+  id String @id @default(uuid()) @db.Uuid
+  clubId String @db.Uuid
+  usuarioId String @db.Uuid
+  pagoOrigenId String @db.Uuid
+  montoInicial Decimal @db.Decimal(12,2)
+  saldoDisponible Decimal @db.Decimal(12,2)
+  registradoPorId String @db.Uuid
+  creadoEn DateTime @default(now())
+  club Club @relation(fields: [clubId], references: [id])
+  usuario Usuario @relation("CreditoTitular", fields: [usuarioId], references: [id])
+  pagoOrigen Pago @relation(fields: [pagoOrigenId], references: [id])
+  registradoPor Usuario @relation("CreditoOperador", fields: [registradoPorId], references: [id])
+  movimientos MovimientoCredito[]
+}
+
+model MovimientoCredito {
+  id String @id @default(uuid()) @db.Uuid
+  creditoId String @db.Uuid
+  inscripcionDestinoId String @db.Uuid
+  tipo String
+  monto Decimal @db.Decimal(12,2)
+  registradoPorId String @db.Uuid
+  fecha DateTime @default(now())
+  credito Credito @relation(fields: [creditoId], references: [id])
+  inscripcionDestino Inscripcion @relation(fields: [inscripcionDestinoId], references: [id])
+  registradoPor Usuario @relation(fields: [registradoPorId], references: [id])
+}
+
+model ReintegroRegistrado {
+  id String @id @default(uuid()) @db.Uuid
+  pagoId String @db.Uuid
+  monto Decimal @db.Decimal(12,2)
+  fechaInformada DateTime
+  registradoPorId String @db.Uuid
+  pago Pago @relation(fields: [pagoId], references: [id])
+  registradoPor Usuario @relation(fields: [registradoPorId], references: [id])
+}
+
+model DocumentoMedico {
+  id String @id @default(uuid()) @db.Uuid
+  usuarioId String @db.Uuid
+  archivoId String @db.Uuid
+  tipo String
+  cargadoEn DateTime @default(now())
+  vencimientoInformado DateTime? @db.Date
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+  archivo ArchivoAdjunto @relation(fields: [archivoId], references: [id])
+}
+
+model CronogramaTorneo {
+  id String @id @default(uuid()) @db.Uuid
+  torneoId String @db.Uuid
+  archivoPdfId String @db.Uuid
+  publicadoEn DateTime @default(now())
+  activo Boolean @default(true)
+  torneo Torneo @relation(fields: [torneoId], references: [id])
+  archivo ArchivoAdjunto @relation(fields: [archivoPdfId], references: [id])
+}
+
+model Notificacion {
+  id String @id @default(uuid()) @db.Uuid
+  destinatarioId String @db.Uuid
+  tipo String
+  mensaje String @db.Text
+  creadaEn DateTime @default(now())
+  leidaEn DateTime?
+  destinatario Usuario @relation(fields: [destinatarioId], references: [id])
+}
+
+model SuscripcionPush {
+  id String @id @default(uuid()) @db.Uuid
+  usuarioId String @db.Uuid
+  endpoint String @unique
+  configuracionCifrada String @db.Text
+  activa Boolean @default(true)
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+model TareaProgramada {
+  id String @id @default(uuid()) @db.Uuid
+  torneoId String @db.Uuid
+  tipo String
+  ejecutarEn DateTime
+  estado EstadoTarea @default(PENDIENTE)
+  revision Int @default(1)
+  torneo Torneo @relation(fields: [torneoId], references: [id])
+  @@index([estado, ejecutarEn])
+}
+
+model EventoAuditoria {
+  id String @id @default(uuid()) @db.Uuid
+  actorId String @db.Uuid
+  entidad String
+  entidadId String
+  accion String
+  detalle Json?
+  creadoEn DateTime @default(now())
+  actor Usuario @relation(fields: [actorId], references: [id])
+  @@index([entidad, entidadId, creadoEn])
+}
+
+// Torneos federativos: registro interno, sin inscripción oficial.
+model TorneoFederativo {
+  id String @id @default(uuid()) @db.Uuid
+  clubId String @db.Uuid
+  nombre String
+  fechaInicio DateTime
+  fechaFin DateTime?
+  entidadOrganizadora String?
+  club Club @relation(fields: [clubId], references: [id])
+  interesados InteresFederativo[]
+  @@index([clubId, fechaInicio])
+}
+
+model InteresFederativo {
+  id String @id @default(uuid()) @db.Uuid
+  torneoFederativoId String @db.Uuid
+  usuarioId String @db.Uuid
+  detallePruebas String? @db.Text
+  creadoEn DateTime @default(now())
+  torneo TorneoFederativo @relation(fields: [torneoFederativoId], references: [id])
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+  @@unique([torneoFederativoId, usuarioId])
+}

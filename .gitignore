@@ -1,0 +1,38 @@
+
+# Dependencias
+node_modules/
+**/node_modules/
+
+# Variables de entorno y credenciales
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
+# Archivos compilados
+dist/
+**/dist/
+build/
+**/build/
+
+# Cache y logs
+*.log
+.cache/
+.vite/
+
+# Prisma Client generado
+Backend/src/generated/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Archivos temporales
+*.tmp
+*.bak

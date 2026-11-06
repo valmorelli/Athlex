@@ -89,3 +89,14 @@ Esto implica que el sistema de carga de resultados/marcas debe soportar dos moda
 2. **Sin Final (por tiempos):** el podio surge de ordenar los tiempos de todas las series entre sí.
 
 Esta regla deberá formalizarse en el catálogo de Reglas de Negocio antes de diseñar el módulo de carga de resultados.
+
+---
+
+## 6. Reglas complementarias de inscripción y resultados (revisión 06/11/2026)
+
+- Cada torneo habilita sus categorías y las disciplinas disponibles para cada una; el catálogo general no obliga a que todos los torneos ofrezcan todo.
+- Cada participante selecciona una única categoría elegible por torneo y la mantiene para todas sus pruebas. Puede anotarse en cualquier cantidad de pruebas habilitadas y el sistema no impide solapamientos horarios.
+- El organizador informa si se elimina una prueba con inscriptos, y el eventual reintegro se coordina fuera de la plataforma.
+- Los relevos continúan informados en el catálogo, pero la aplicación no inscribe equipos de relevos en esta versión.
+- Para resultados autodeclarados del atleta: menor tiempo es mejor en carreras y mayor distancia en saltos/lanzamientos; se conserva unidad/precisión, viento cuando corresponda y posibles estados DNS, DNF, DQ o NM. Marcas con viento no homologable no deben presentarse como récord oficial.
+- Las reglas de podio por series o final y el puntaje de combinadas se mantienen como referencia deportiva para módulos futuros: **no** implican cálculo automático oficial en esta versión. Las marcas/PB son cargadas manualmente por cada atleta, sin integración federativa.
