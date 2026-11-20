@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import type { EstadoRegistro, RegistroDiario } from '../../../../Athlex_UI_Integracion/Frontend/src/types/training';
+import type { EstadoRegistro, RegistroDiario } from "../../types/training";
 import { RPESelector } from './RPESelector';
 
 const inicial: RegistroDiario = { estado: 'SIN_REGISTRAR', sensacion: null, calzado: null, clima: '', observaciones: '', motivoFalta: '' };

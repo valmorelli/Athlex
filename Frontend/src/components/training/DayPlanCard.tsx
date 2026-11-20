@@ -1,4 +1,4 @@
-import type { DiaPlanificado } from '../../../../Athlex_UI_Integracion/Frontend/src/types/training';
+import type { DiaPlanificado } from "../../types/training";
 
 const especialidades = ['vallistas', 'velocistas', 'saltadores', 'fondistas', 'corredores de 400'];
 
