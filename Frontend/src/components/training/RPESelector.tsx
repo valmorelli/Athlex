@@ -1,4 +1,4 @@
-import type { Sensacion } from '../../../../Athlex_UI_Integracion/Frontend/src/types/training';
+import type { Sensacion } from "../../types/training";
 export const opcionesSensacion: { value: Sensacion; label: string; color: string }[] = [
   { value: 'VERDE', label: 'Muy suave', color: '#54b66d' },
   { value: 'AMARILLO', label: 'Suave', color: '#e5c75b' },

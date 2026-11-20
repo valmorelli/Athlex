@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { PlanSemanal } from '../../../../Athlex_UI_Integracion/Frontend/src/types/training';
+import type { PlanSemanal } from "../../types/training";
 import { DayNavigator } from './DayNavigator';
 import { DayPlanCard } from './DayPlanCard';
 

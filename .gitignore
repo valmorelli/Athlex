@@ -36,3 +36,6 @@ Thumbs.db
 # Archivos temporales
 *.tmp
 *.bak
+
+# Documentos privados subidos por usuarios
+Backend/private_uploads/
